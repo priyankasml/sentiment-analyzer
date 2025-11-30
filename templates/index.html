@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentiment Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+body {
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color:#fff;
+}
+.container {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(15px);
+    padding:40px 50px;
+    border-radius:20px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.3);
+    width:100%; max-width:650px;
+    text-align:center;
+    animation:fadeIn 1s ease;
+}
+h1 { font-size:32px; margin-bottom:25px; text-shadow:2px 2px 8px rgba(0,0,0,0.3);}
+textarea {
+    width:100%; height:140px; padding:15px; border-radius:15px;
+    border:none; resize:none; font-size:16px; margin-bottom:25px;
+    outline:none; box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+textarea:focus { transform: scale(1.02); box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+button {
+    padding:14px 30px; border:none; border-radius:15px;
+    background:linear-gradient(45deg,#ff6a00,#ee0979); color:#fff;
+    font-size:18px; font-weight:600; cursor:pointer; transition: all 0.3s ease;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+button:hover { transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,0,0,0.3);}
+.result {
+    margin-top:25px; font-size:20px; font-weight:700; padding:15px; border-radius:12px;
+    display:inline-block; min-width:250px; transition: all 0.3s ease;
+}
+.positive { color:#2ed573; background: rgba(46,213,115,0.15); box-shadow:0 5px 15px rgba(46,213,115,0.3);}
+.negative { color:#ff4757; background: rgba(255,71,87,0.15); box-shadow:0 5px 15px rgba(255,71,87,0.3);}
+#word-attention { margin-top:20px; display:flex; flex-wrap:wrap; justify-content:center;}
+.word { padding:3px 6px; border-radius:5px; margin:2px; display:inline-block; font-size:14px; transition: all 0.2s ease;}
+@keyframes fadeIn {0% {opacity:0; transform:translateY(-20px);} 100% {opacity:1; transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Sentiment Analyzer</h1>
+    <textarea id="text-input" placeholder="Type your review or text here..."></textarea>
+    <br>
+    <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+    <div class="result" id="result"></div>
+    <div id="word-attention"></div>
+</div>
+
+<script>
+async function analyzeSentiment() {
+    const text = document.getElementById('text-input').value.trim();
+    if(!text) return alert("Please enter some text!");
+
+    const response = await fetch('/predict', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text })
+    });
+
+    const data = await response.json();
+    const resultDiv = document.getElementById('result');
+    resultDiv.textContent = `Positive: ${data.positive}, Negative: ${data.negative}, Intensity: ${data.intensity}`;
+
+    // Color result box
+    if(data.intensity.toLowerCase().includes("positive")) {
+        resultDiv.classList.add('positive');
+        resultDiv.classList.remove('negative');
+    } else if(data.intensity.toLowerCase().includes("negative")) {
+        resultDiv.classList.add('negative');
+        resultDiv.classList.remove('positive');
+    } else {
+        resultDiv.classList.remove('positive', 'negative');
+    }
+
+    // Word-level attention
+    const wordDiv = document.getElementById('word-attention');
+    wordDiv.innerHTML = '';
+    data.words_attention.forEach(w => {
+        const span = document.createElement('span');
+        span.textContent = w.word;
+        const intensity = Math.min(Math.abs(w.score)*10,1); // scale 0.2-1
+        if(w.score >= 0) {
+            span.style.backgroundColor = `rgba(46,213,115,${intensity})`; // green
+            span.style.color = '#fff';
+        } else {
+            span.style.backgroundColor = `rgba(255,71,87,${intensity})`; // red
+            span.style.color = '#fff';
+        }
+        span.className = 'word';
+        wordDiv.appendChild(span);
+    });
+}
+</script>
+</body>
+</html>
