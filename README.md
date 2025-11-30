@@ -38,15 +38,5 @@ A **full-stack web application** that analyzes the sentiment of user input text 
 ---
 
 ## **Project Structure**
-sentiment-analyzer/
-│
-├─ app.py # Flask backend
-├─ model.py # Model architecture definition
-├─ sentiment_weights.weights.h5 # Pretrained weights
-├─ word_index.pkl # Word to index mapping
-├─ templates/
-│ └─ index.html # Frontend HTML file
-├─ static/
-│ └─ (optional CSS/JS if separated)
-├─ README.md
-└─ .gitignore
+<img width="632" height="675" alt="image" src="https://github.com/user-attachments/assets/50e5cca7-36d6-4371-ba72-1aa1fc1861f4" />
+
